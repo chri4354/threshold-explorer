@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Threshold Explorer</title>
+<meta name="description" content="Move a decision threshold and watch precision, recall and the confusion matrix move with it.">
+<style>
+:root{
+  color-scheme: light;
+  --page:#E6EBF1; --surface:#FFFFFF; --inset:#F3F6F9; --rule:#D2DAE3;
+  --ink:#10141A; --ink-2:#48525E; --ink-3:#77828F;
+  --pos:#C2185B; --neg:#2F6FD0;
+  --pos-soft:rgba(194,24,91,.16); --neg-soft:rgba(47,111,208,.16);
+  --hl:rgba(194,24,91,.10);
+  --shadow:0 1px 2px rgba(16,24,40,.05), 0 2px 7px rgba(16,24,40,.04);
+  --sans:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --page:#0E1116; --surface:#1B2026; --inset:#232A32; --rule:#313A44;
+    --ink:#EDF0F4; --ink-2:#B4BDC7; --ink-3:#848E9A;
+    --pos:#DD5585; --neg:#5E95EA;
+    --pos-soft:rgba(221,85,133,.20); --neg-soft:rgba(94,149,234,.20);
+    --hl:rgba(221,85,133,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.45);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --page:#0E1116; --surface:#1B2026; --inset:#232A32; --rule:#313A44;
+  --ink:#EDF0F4; --ink-2:#B4BDC7; --ink-3:#848E9A;
+  --pos:#DD5585; --neg:#5E95EA;
+  --pos-soft:rgba(221,85,133,.20); --neg-soft:rgba(94,149,234,.20);
+  --hl:rgba(221,85,133,.14);
+  --shadow:0 1px 2px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--page);color:var(--ink);font-family:var(--sans);
+     line-height:1.5;padding:34px 16px 64px}
+body:before{content:"";position:fixed;left:0;right:0;top:0;height:4px;z-index:10;
+  background:linear-gradient(90deg,#E8663B,#C2185B,#7B4FA8,#3A70D6,#4FA8A0)}
+.wrap{max-width:1180px;margin:0 auto}
+@media (max-width:820px){header{padding-right:72px}}
+header{margin-bottom:22px;max-width:760px}
+h1{font-size:30px;line-height:1.15;letter-spacing:-.02em;margin-bottom:8px}
+.stand{color:var(--ink-2);font-size:16px}
+.themebtn{position:absolute;top:22px;right:16px;background:var(--surface);border:1px solid var(--rule);
+  color:var(--ink-2);border-radius:999px;padding:5px 13px;font:inherit;font-size:13px;cursor:pointer}
+.themebtn:hover{border-color:var(--ink-3);color:var(--ink)}
+
+/* controls */
+.controls{background:var(--surface);border:1px solid var(--rule);border-radius:10px;box-shadow:var(--shadow);
+  padding:16px 18px;margin-bottom:22px}
+.presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:center}
+.presets .lbl{font-size:13px;color:var(--ink-3);margin-right:2px}
+.preset{background:var(--inset);border:1px solid var(--rule);color:var(--ink);
+  border-radius:999px;padding:5px 13px;font:inherit;font-size:13px;cursor:pointer}
+.preset:hover{border-color:var(--ink-3)}
+.sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:16px 26px}
+.ctl label{display:flex;justify-content:space-between;align-items:baseline;
+  font-size:13px;color:var(--ink-2);margin-bottom:5px;gap:10px}
+.ctl .val{font-family:var(--mono);font-size:13px;color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--pos)}
+.hint{font-size:12px;color:var(--ink-3);margin-top:4px}
+.check{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2);margin-top:14px}
+
+/* layout */
+.grid{display:grid;grid-template-columns:1.45fr 1fr;gap:22px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:16px 18px;box-shadow:var(--shadow)}
+.card h2{font-size:15px;letter-spacing:-.01em;margin-bottom:3px}
+.card .sub{font-size:12.5px;color:var(--ink-3);margin-bottom:12px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.curves{touch-action:none;cursor:ew-resize}
+
+/* legend */
+.legend{display:flex;gap:16px;font-size:13px;color:var(--ink-2);margin-bottom:10px;flex-wrap:wrap}
+.legend span{display:flex;align-items:center;gap:6px}
+.chip{width:11px;height:11px;border-radius:3px;flex:none}
+
+/* confusion table */
+table.cm{border-collapse:separate;border-spacing:2px;width:100%;margin-top:4px}
+table.cm caption{text-align:left;font-size:12.5px;color:var(--ink-3);margin-bottom:8px;caption-side:top}
+table.cm th{font-size:12px;font-weight:600;color:var(--ink-2);padding:4px 6px;text-align:center}
+table.cm th.rowh{text-align:right;white-space:nowrap}
+table.cm thead td{background:none;border:none;padding:0}
+table.cm tbody td{background:var(--inset);border:1px solid var(--rule);border-radius:7px;
+  padding:12px 8px;text-align:center;transition:background .15s,border-color .15s}
+table.cm tbody td .n{font-family:var(--mono);font-size:21px;font-variant-numeric:tabular-nums;display:block}
+table.cm tbody td .k{font-size:11px;color:var(--ink-3);letter-spacing:.06em;text-transform:uppercase}
+table.cm tbody td.lit{background:var(--hl);border-color:var(--pos)}
+
+/* metric tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:10px;margin-top:16px}
+.tile{background:var(--inset);border:1px solid var(--rule);border-radius:8px;padding:10px 11px;cursor:default}
+.tile:hover{border-color:var(--ink-3)}
+.tile .t{font-size:11.5px;color:var(--ink-3);display:flex;align-items:center;gap:5px;margin-bottom:3px}
+.tile .v{font-family:var(--mono);font-size:19px;font-variant-numeric:tabular-nums}
+.tile .f{font-size:11px;color:var(--ink-3);font-family:var(--mono);margin-top:2px}
+.bar{height:3px;border-radius:2px;background:var(--rule);margin-top:7px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink-3)}
+
+.readout{margin-top:22px;background:var(--surface);border:1px solid var(--rule);box-shadow:var(--shadow);
+  border-left:3px solid var(--pos);border-radius:8px;padding:14px 18px;font-size:15px;color:var(--ink-2)}
+.readout b{color:var(--ink);font-weight:600}
+.note{margin-top:18px;font-size:13.5px;color:var(--ink-3);max-width:760px}
+footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--rule);
+  font-size:12.5px;color:var(--ink-3)}
+footer a{color:var(--ink-2)}
+</style>
+</head>
+<body>
+<button class="themebtn" id="theme" type="button">dark</button>
+<div class="wrap">
+
+<header>
+  <h1>Where do you put the threshold?</h1>
+  <p class="stand">A model gives every case a score. You decide how high that score has to be
+  before you act on it. Move the threshold and watch what it costs you.</p>
+</header>
+
+<div class="controls">
+  <div class="presets">
+    <span class="lbl">Start from:</span>
+    <button class="preset" data-p="0.5"   data-d="2"    data-t="1">Balanced classes</button>
+    <button class="preset" data-p="0.15"  data-d="1.42" data-t="0.385">Chihuahua or muffin</button>
+    <button class="preset" data-p="0.004" data-d="3.93" data-t="0.842">Smoke alarm</button>
+  </div>
+  <div class="sliders">
+    <div class="ctl">
+      <label for="prev">How common the positive class is <span class="val" id="prevv"></span></label>
+      <input type="range" id="prev" min="0" max="1000" value="500">
+      <p class="hint">The base rate, before any evidence.</p>
+    </div>
+    <div class="ctl">
+      <label for="sep">How different the two groups look <span class="val" id="sepv"></span></label>
+      <input type="range" id="sep" min="0" max="400" value="200">
+      <p class="hint">How good the model's score is at telling them apart.</p>
+    </div>
+    <div class="ctl">
+      <label for="thr">Decision threshold <span class="val" id="thrv"></span></label>
+      <input type="range" id="thr" min="-450" max="850" value="100">
+      <p class="hint">Flag every case scoring at or above this. Drag the line on the chart too.</p>
+    </div>
+  </div>
+  <label class="check"><input type="checkbox" id="scaled" checked>
+    Draw each group at its real size, so a rare class looks rare</label>
+</div>
+
+<div class="grid">
+  <div>
+    <div class="card">
+      <h2>The two groups, and where you cut</h2>
+      <p class="sub">Everything at or to the right of the line gets flagged.</p>
+      <div class="legend">
+        <span><i class="chip" style="background:var(--pos)"></i>Positive class</span>
+        <span><i class="chip" style="background:var(--neg)"></i>Negative class</span>
+        <span><i class="chip" style="background:var(--ink-3)"></i>Threshold</span>
+      </div>
+      <svg class="curves" id="curves" viewBox="0 0 820 310" role="img"
+           aria-label="Score distributions for the two classes with a movable decision threshold"></svg>
+    </div>
+
+    <div class="card" style="margin-top:22px">
+      <h2>Confusion matrix</h2>
+      <p class="sub">Laid out the way scikit-learn returns it: truth down the rows,
+         the model's prediction across the columns.</p>
+      <table class="cm" id="cm">
+        <caption>Counts per 10,000 cases.</caption>
+        <thead>
+          <tr><td></td><th scope="col">Predicted negative</th><th scope="col">Predicted positive</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row" class="rowh">Actually negative</th>
+              <td data-c="tn"><span class="n" id="n-tn"></span><span class="k">TN</span></td>
+              <td data-c="fp"><span class="n" id="n-fp"></span><span class="k">FP</span></td></tr>
+          <tr><th scope="row" class="rowh">Actually positive</th>
+              <td data-c="fn"><span class="n" id="n-fn"></span><span class="k">FN</span></td>
+              <td data-c="tp"><span class="n" id="n-tp"></span><span class="k">TP</span></td></tr>
+        </tbody>
+      </table>
+      <div class="tiles" id="tiles">
+        <div class="tile" data-lit="tp,fp"><div class="t">Precision</div>
+          <div class="v" id="m-prec"></div><div class="f">TP / (TP + FP)</div>
+          <div class="bar"><i id="b-prec"></i></div></div>
+        <div class="tile" data-lit="tp,fn"><div class="t">Recall</div>
+          <div class="v" id="m-rec"></div><div class="f">TP / (TP + FN)</div>
+          <div class="bar"><i id="b-rec"></i></div></div>
+        <div class="tile" data-lit="tn,fp"><div class="t">Specificity</div>
+          <div class="v" id="m-spec"></div><div class="f">TN / (TN + FP)</div>
+          <div class="bar"><i id="b-spec"></i></div></div>
+        <div class="tile" data-lit="tp,fp,fn"><div class="t">F1</div>
+          <div class="v" id="m-f1"></div><div class="f">harmonic mean</div>
+          <div class="bar"><i id="b-f1"></i></div></div>
+        <div class="tile" data-lit="tp,tn"><div class="t">Accuracy</div>
+          <div class="v" id="m-acc"></div><div class="f">(TP + TN) / all</div>
+          <div class="bar"><i id="b-acc"></i></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <h2>ROC curve</h2>
+      <p class="sub">Every threshold you could have picked. The dot is yours.</p>
+      <svg id="roc" viewBox="0 0 320 300" role="img"
+           aria-label="ROC curve with the current threshold marked"></svg>
+      <p class="hint" style="margin-top:8px">Changing the base rate does not move this curve at all.</p>
+    </div>
+    <div class="card" style="margin-top:22px">
+      <h2>Precision–recall curve</h2>
+      <p class="sub">The same thresholds, plotted the other way.</p>
+      <svg id="pr" viewBox="0 0 320 300" role="img"
+           aria-label="Precision-recall curve with the current threshold marked"></svg>
+      <p class="hint" style="margin-top:8px">This one collapses as the positive class gets rarer.</p>
+    </div>
+  </div>
+</div>
+
+<p class="readout" id="readout"></p>
+
+<p class="note">Both curves are drawn from the normal distributions directly rather than from a
+random sample, so nothing jitters when you move a slider: every change you see is the change you made.</p>
+
+<footer>
+  Built for Data Science and Machine Learning in Practice, week 7.
+  Source: <a href="https://github.com/chri4354">github.com/chri4354</a>
+</footer>
+</div>
+
+<script>
+/* ---------- maths ---------- */
+function erf(x){
+  const s = x < 0 ? -1 : 1; x = Math.abs(x);
+  const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+  const t=1/(1+p*x);
+  return s*(1-(((((a5*t+a4)*t+a3)*t+a2)*t+a1)*t)*Math.exp(-x*x));
+}
+const Phi = z => 0.5*(1+erf(z/Math.SQRT2));
+const pdf = (x,mu) => Math.exp(-0.5*(x-mu)*(x-mu))/Math.sqrt(2*Math.PI);
+const N = 10000;
+const HALO = 'paint-order="stroke" stroke="var(--surface)" stroke-width="3.5" stroke-linejoin="round"';
+
+const el = id => document.getElementById(id);
+const prevIn=el("prev"), sepIn=el("sep"), thrIn=el("thr"), scaledIn=el("scaled");
+
+const prevalence = () => Math.pow(10, -3 + (prevIn.value/1000)*2.69897);
+const sep        = () => sepIn.value/100;
+const thr        = () => thrIn.value/100;
+
+function stats(){
+  const pi=prevalence(), d=sep(), t=thr();
+  const tpr = 1-Phi(t-d), fpr = 1-Phi(t);
+  const tp=N*pi*tpr, fn=N*pi*(1-tpr), fp=N*(1-pi)*fpr, tn=N*(1-pi)*(1-fpr);
+  const prec = (tp+fp)>0 ? tp/(tp+fp) : 0;
+  const f1 = (prec+tpr)>0 ? 2*prec*tpr/(prec+tpr) : 0;
+  return {pi,d,t,tpr,fpr,tp,fn,fp,tn,prec,rec:tpr,spec:1-fpr,f1,acc:(tp+tn)/N};
+}
+const pct = v => (100*v).toFixed(v<0.01&&v>0 ? 2 : 1)+"%";
+const cnt = v => Math.round(v).toLocaleString("en-GB");
+
+/* ---------- distributions ---------- */
+const X0=58, X1=800, Y0=14, Y1=252, XMIN=-4.5, XMAX=8.5;
+const sx = x => X0+(x-XMIN)/(XMAX-XMIN)*(X1-X0);
+const xs = px => XMIN+(px-X0)/(X1-X0)*(XMAX-XMIN);
+
+function drawCurves(S){
+  const scale = scaledIn.checked;
+  const w0 = scale ? 1-S.pi : 1, w1 = scale ? S.pi : 1;
+  const ymax = 0.3989*Math.max(w0,w1);
+  const sy = v => Y1-(v/ymax)*(Y1-Y0);
+  const pts = (mu,w) => {
+    let p=[];
+    for(let i=0;i<=260;i++){ const x=XMIN+(XMAX-XMIN)*i/260; p.push([sx(x),sy(w*pdf(x,mu))]); }
+    return p;
+  };
+  const path = p => p.map((q,i)=>(i?"L":"M")+q[0].toFixed(1)+","+q[1].toFixed(1)).join(" ");
+  const area = (p,from) => {
+    const seg = p.filter(q=>q[0]>=from-0.001);
+    if(!seg.length) return "";
+    return path(seg)+` L${X1},${Y1} L${seg[0][0].toFixed(1)},${Y1} Z`;
+  };
+  const p0=pts(0,w0), p1=pts(S.d,w1), tx=sx(S.t);
+
+  const peak0=sy(w0*0.3989), peak1=sy(w1*0.3989);
+  const lab = py => Math.max(Y0+4, Math.min(py-12, Y1-30));
+  const ticks=[-4,-2,0,2,4,6,8].map(v=>
+    `<line x1="${sx(v)}" y1="${Y1}" x2="${sx(v)}" y2="${Y1+5}" stroke="var(--rule)" stroke-width="1"/>
+     <text x="${sx(v)}" y="${Y1+20}" text-anchor="middle" font-size="11" fill="var(--ink-3)">${v}</text>`).join("");
+
+  el("curves").innerHTML = `
+    <path d="${area(p0,X0)}" fill="var(--neg-soft)"/>
+    <path d="${area(p1,X0)}" fill="var(--pos-soft)"/>
+    <path d="${area(p0,tx)}" fill="var(--neg)" opacity=".55"/>
+    <path d="${area(p1,tx)}" fill="var(--pos)" opacity=".75"/>
+    <path d="${path(p0)}" fill="none" stroke="var(--neg)" stroke-width="2"/>
+    <path d="${path(p1)}" fill="none" stroke="var(--pos)" stroke-width="2"/>
+    <line x1="${X0}" y1="${Y1}" x2="${X1}" y2="${Y1}" stroke="var(--rule)" stroke-width="1"/>
+    ${ticks}
+    <text x="${(X0+X1)/2}" y="${Y1+40}" text-anchor="middle" font-size="12" fill="var(--ink-3)">model's score</text>
+    <line x1="${tx}" y1="${Y0-6}" x2="${tx}" y2="${Y1}" stroke="var(--ink-3)" stroke-width="2" stroke-dasharray="6 4"/>
+    <circle cx="${tx}" cy="${Y0-6}" r="6" fill="var(--surface)" stroke="var(--ink-3)" stroke-width="2"/>
+    <text x="${sx(0)}" y="${lab(peak0)}" text-anchor="middle" font-size="12.5" font-weight="600"
+          fill="var(--neg)" ${HALO}>negative class</text>
+    <text x="${sx(S.d)}" y="${lab(peak1)}" text-anchor="middle" font-size="12.5" font-weight="600"
+          fill="var(--pos)" ${HALO}>positive class</text>
+    <text x="${Math.min(tx+9,X1-96)}" y="${Y1-8}" font-size="11.5" fill="var(--ink-3)" ${HALO}>flagged &rarr;</text>`;
+}
+
+/* ---------- ROC / PR ---------- */
+const A0=48, A1=300, B0=18, B1=250;
+const ax = v => A0+v*(A1-A0), ay = v => B1-v*(B1-B0);
+
+function sweep(S){
+  const out=[];
+  for(let i=0;i<=320;i++){
+    const t=-6+i*(14/320);
+    const tpr=1-Phi(t-S.d), fpr=1-Phi(t);
+    const tp=S.pi*tpr, fp=(1-S.pi)*fpr;
+    out.push({t,tpr,fpr,prec:(tp+fp)>0?tp/(tp+fp):1});
+  }
+  return out;
+}
+function frame(xlab,ylab,extra){
+  return `<line x1="${A0}" y1="${B0}" x2="${A0}" y2="${B1}" stroke="var(--rule)"/>
+    <line x1="${A0}" y1="${B1}" x2="${A1}" y2="${B1}" stroke="var(--rule)"/>
+    ${[0,0.5,1].map(v=>`<text x="${ax(v)}" y="${B1+17}" text-anchor="middle" font-size="10.5" fill="var(--ink-3)">${v}</text>
+      <text x="${A0-8}" y="${ay(v)+4}" text-anchor="end" font-size="10.5" fill="var(--ink-3)">${v}</text>`).join("")}
+    <text x="${(A0+A1)/2}" y="${B1+36}" text-anchor="middle" font-size="11.5" fill="var(--ink-2)">${xlab}</text>
+    <text x="14" y="${(B0+B1)/2}" text-anchor="middle" font-size="11.5" fill="var(--ink-2)"
+          transform="rotate(-90 14 ${(B0+B1)/2})">${ylab}</text>${extra||""}`;
+}
+function drawRoc(S,sw){
+  const d=sw.map((p,i)=>(i?"L":"M")+ax(p.fpr).toFixed(1)+","+ay(p.tpr).toFixed(1)).join(" ");
+  el("roc").innerHTML = frame("False positive rate","True positive rate",
+    `<line x1="${ax(0)}" y1="${ay(0)}" x2="${ax(1)}" y2="${ay(1)}" stroke="var(--ink-3)"
+           stroke-width="1.5" stroke-dasharray="5 4" opacity=".6"/>
+     <path d="${d}" fill="none" stroke="var(--neg)" stroke-width="2"/>
+     <circle cx="${ax(S.fpr)}" cy="${ay(S.rec)}" r="6" fill="var(--pos)"
+             stroke="var(--surface)" stroke-width="2"/>`);
+}
+function drawPr(S,sw){
+  const d=sw.map((p,i)=>(i?"L":"M")+ax(p.tpr).toFixed(1)+","+ay(p.prec).toFixed(1)).join(" ");
+  el("pr").innerHTML = frame("Recall","Precision",
+    `<line x1="${ax(0)}" y1="${ay(S.pi)}" x2="${ax(1)}" y2="${ay(S.pi)}" stroke="var(--ink-3)"
+           stroke-width="1.5" stroke-dasharray="5 4" opacity=".6"/>
+     <text x="${A1-2}" y="${ay(S.pi)-6}" text-anchor="end" font-size="10.5" fill="var(--ink-3)">base rate</text>
+     <path d="${d}" fill="none" stroke="var(--neg)" stroke-width="2"/>
+     <circle cx="${ax(S.rec)}" cy="${ay(S.prec)}" r="6" fill="var(--pos)"
+             stroke="var(--surface)" stroke-width="2"/>`);
+}
+
+/* ---------- render ---------- */
+function render(){
+  const S=stats(), sw=sweep(S);
+  el("prevv").textContent = pct(S.pi);
+  el("sepv").textContent  = S.d.toFixed(2);
+  el("thrv").textContent  = S.t.toFixed(2);
+
+  drawCurves(S); drawRoc(S,sw); drawPr(S,sw);
+
+  el("n-tp").textContent=cnt(S.tp); el("n-fp").textContent=cnt(S.fp);
+  el("n-fn").textContent=cnt(S.fn); el("n-tn").textContent=cnt(S.tn);
+
+  [["prec",S.prec],["rec",S.rec],["spec",S.spec],["f1",S.f1],["acc",S.acc]].forEach(([k,v])=>{
+    el("m-"+k).textContent=pct(v); el("b-"+k).style.width=(100*v).toFixed(1)+"%";
+  });
+
+  const pos=Math.round(S.pi*N), flagged=Math.round(S.tp+S.fp);
+  el("readout").innerHTML =
+    `Out of ${cnt(N)} cases, <b>${cnt(pos)}</b> are actually positive. At this threshold the model
+     flags <b>${cnt(flagged)}</b> of them and <b>${cnt(S.tp)}</b> of those flags are right, so precision
+     is <b>${pct(S.prec)}</b>. It finds ${cnt(S.tp)} of the ${cnt(pos)} positives, so recall
+     is <b>${pct(S.rec)}</b>. Accuracy is <b>${pct(S.acc)}</b>.`;
+}
+
+/* ---------- interaction ---------- */
+[prevIn,sepIn,thrIn,scaledIn].forEach(c=>c.addEventListener("input",render));
+
+document.querySelectorAll(".preset").forEach(b=>b.addEventListener("click",()=>{
+  const pi=+b.dataset.p;
+  prevIn.value = Math.round(((Math.log10(pi)+3)/2.69897)*1000);
+  sepIn.value  = Math.round(+b.dataset.d*100);
+  thrIn.value  = Math.round(+b.dataset.t*100);
+  render();
+}));
+
+const svgC=el("curves");
+function dragTo(ev){
+  const r=svgC.getBoundingClientRect();
+  const px=((ev.clientX-r.left)/r.width)*820;
+  thrIn.value=Math.round(Math.max(-4.5,Math.min(8.5,xs(px)))*100);
+  render();
+}
+svgC.addEventListener("pointerdown",e=>{svgC.setPointerCapture(e.pointerId);dragTo(e);});
+svgC.addEventListener("pointermove",e=>{if(e.buttons)dragTo(e);});
+
+document.querySelectorAll(".tile").forEach(tile=>{
+  const lit=tile.dataset.lit.split(",");
+  const set=on=>lit.forEach(k=>
+    document.querySelector(`#cm td[data-c="${k}"]`).classList.toggle("lit",on));
+  tile.addEventListener("mouseenter",()=>set(true));
+  tile.addEventListener("mouseleave",()=>set(false));
+});
+
+const themeBtn=el("theme");
+function applyTheme(t){
+  document.documentElement.dataset.theme=t;
+  themeBtn.textContent = t==="dark" ? "light" : "dark";
+  try{ localStorage.setItem("te-theme",t); }catch(e){}
+}
+themeBtn.addEventListener("click",()=>
+  applyTheme(document.documentElement.dataset.theme==="dark"?"light":"dark"));
+try{
+  const saved=localStorage.getItem("te-theme");
+  if(saved) applyTheme(saved);
+  else themeBtn.textContent =
+    matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "dark";
+}catch(e){}
+
+render();
+</script>
+</body>
+</html>
