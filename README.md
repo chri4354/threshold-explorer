@@ -7,10 +7,14 @@ Open `index.html` in a browser. There is no build step and nothing to install.
 
 ## What it does
 
-Two classes score on overlapping normal distributions. Three sliders control the
-base rate, how far apart the two groups sit, and where the decision threshold goes.
-Everything else updates live: the distributions, a confusion matrix, five metrics,
+Two classes score on overlapping normal distributions. Three sliders in the left sidebar
+control the base rate, how far apart the two groups sit, and where the decision threshold
+goes. Everything else updates live: the distributions, a confusion matrix, five metrics,
 a ROC curve and a precision–recall curve.
+
+The whole thing is built to fit one screen with no scrolling, so it can be driven live in
+front of a class. Below roughly 1060px wide or 620px tall it falls back to a stacked,
+scrolling page.
 
 ## What it adds over the Shiny version
 

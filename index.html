@@ -38,97 +38,127 @@
   --shadow:0 1px 2px rgba(0,0,0,.45);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--page);color:var(--ink);font-family:var(--sans);
-     line-height:1.5;padding:34px 16px 64px}
+html,body{height:100%}
+body{background:var(--page);color:var(--ink);font-family:var(--sans);line-height:1.45;
+  display:grid;grid-template-columns:320px 1fr;gap:13px;padding:13px;overflow:hidden}
 body:before{content:"";position:fixed;left:0;right:0;top:0;height:4px;z-index:10;
   background:linear-gradient(90deg,#E8663B,#C2185B,#7B4FA8,#3A70D6,#4FA8A0)}
-.wrap{max-width:1180px;margin:0 auto}
-@media (max-width:820px){header{padding-right:72px}}
-header{margin-bottom:22px;max-width:760px}
-h1{font-size:30px;line-height:1.15;letter-spacing:-.02em;margin-bottom:8px}
-.stand{color:var(--ink-2);font-size:16px}
-.themebtn{position:absolute;top:22px;right:16px;background:var(--surface);border:1px solid var(--rule);
-  color:var(--ink-2);border-radius:999px;padding:5px 13px;font:inherit;font-size:13px;cursor:pointer}
+
+/* ---- sidebar ---- */
+.side{background:var(--surface);border:1px solid var(--rule);border-radius:10px;
+  box-shadow:var(--shadow);padding:15px 16px;margin-top:4px;
+  display:flex;flex-direction:column;gap:13px;overflow-y:auto;min-height:0}
+h1{font-size:21px;line-height:1.14;letter-spacing:-.021em;margin-bottom:5px}
+.stand{color:var(--ink-2);font-size:12.5px;line-height:1.42}
+.side h3{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:600;margin-bottom:7px}
+.presets{display:flex;flex-wrap:wrap;gap:6px}
+.preset{background:var(--inset);border:1px solid var(--rule);color:var(--ink);
+  border-radius:999px;padding:5px 11px;font:inherit;font-size:12px;cursor:pointer}
+.preset:hover{border-color:var(--ink-3)}
+.sliders{display:flex;flex-direction:column;gap:13px}
+.ctl label{display:flex;justify-content:space-between;align-items:baseline;
+  font-size:12.5px;color:var(--ink-2);margin-bottom:4px;gap:8px}
+.ctl .val{font-family:var(--mono);font-size:12.5px;color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--pos);margin:0}
+.hint{font-size:11px;color:var(--ink-3);margin-top:3px;line-height:1.35}
+.check{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--ink-2);line-height:1.35}
+.check input{margin-top:1px;flex:none}
+.readout{background:var(--inset);border-radius:8px;border-left:3px solid var(--pos);
+  padding:11px 12px;font-size:12.5px;color:var(--ink-2);line-height:1.5}
+.readout b{color:var(--ink);font-weight:600}
+.sidefoot{margin-top:auto;padding-top:11px;border-top:1px solid var(--rule);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  font-size:11px;color:var(--ink-3)}
+.sidefoot a{color:var(--ink-3)}
+.themebtn{background:var(--inset);border:1px solid var(--rule);color:var(--ink-2);
+  border-radius:999px;padding:4px 11px;font:inherit;font-size:11.5px;cursor:pointer;flex:none}
 .themebtn:hover{border-color:var(--ink-3);color:var(--ink)}
 
-/* controls */
-.controls{background:var(--surface);border:1px solid var(--rule);border-radius:10px;box-shadow:var(--shadow);
-  padding:16px 18px;margin-bottom:22px}
-.presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:center}
-.presets .lbl{font-size:13px;color:var(--ink-3);margin-right:2px}
-.preset{background:var(--inset);border:1px solid var(--rule);color:var(--ink);
-  border-radius:999px;padding:5px 13px;font:inherit;font-size:13px;cursor:pointer}
-.preset:hover{border-color:var(--ink-3)}
-.sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:16px 26px}
-.ctl label{display:flex;justify-content:space-between;align-items:baseline;
-  font-size:13px;color:var(--ink-2);margin-bottom:5px;gap:10px}
-.ctl .val{font-family:var(--mono);font-size:13px;color:var(--ink);font-variant-numeric:tabular-nums}
-input[type=range]{width:100%;accent-color:var(--pos)}
-.hint{font-size:12px;color:var(--ink-3);margin-top:4px}
-.check{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2);margin-top:14px}
+/* ---- main grid: four panels, no page scroll ---- */
+main{display:grid;grid-template-columns:1.52fr 1fr;grid-template-rows:1.1fr 1fr;
+  gap:13px;min-height:0;min-width:0;margin-top:4px}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:10px;
+  padding:11px 14px 12px;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden}
+.card h2{font-size:13.5px;letter-spacing:-.01em}
+.card .sub{font-size:11.5px;color:var(--ink-3);margin-top:1px;line-height:1.35}
+.plot{flex:1;min-height:0;margin-top:6px}
+.plot svg{width:100%;height:100%;display:block;overflow:visible}
+.foot{font-size:11px;color:var(--ink-3);margin-top:5px;line-height:1.35}
 
-/* layout */
-.grid{display:grid;grid-template-columns:1.45fr 1fr;gap:22px;align-items:start}
-@media (max-width:900px){.grid{grid-template-columns:1fr}}
-.card{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:16px 18px;box-shadow:var(--shadow)}
-.card h2{font-size:15px;letter-spacing:-.01em;margin-bottom:3px}
-.card .sub{font-size:12.5px;color:var(--ink-3);margin-bottom:12px}
-svg{display:block;width:100%;height:auto;overflow:visible}
-.curves{touch-action:none;cursor:ew-resize}
+.legend{display:flex;gap:13px;font-size:11.5px;color:var(--ink-2);margin-top:6px;flex-wrap:wrap}
+.legend span{display:flex;align-items:center;gap:5px}
+.chip{width:10px;height:10px;border-radius:3px;flex:none}
 
-/* legend */
-.legend{display:flex;gap:16px;font-size:13px;color:var(--ink-2);margin-bottom:10px;flex-wrap:wrap}
-.legend span{display:flex;align-items:center;gap:6px}
-.chip{width:11px;height:11px;border-radius:3px;flex:none}
-
-/* confusion table */
-table.cm{border-collapse:separate;border-spacing:2px;width:100%;margin-top:4px}
-table.cm caption{text-align:left;font-size:12.5px;color:var(--ink-3);margin-bottom:8px;caption-side:top}
-table.cm th{font-size:12px;font-weight:600;color:var(--ink-2);padding:4px 6px;text-align:center}
+/* confusion matrix */
+table.cm{border-collapse:separate;border-spacing:2px;width:100%;margin-top:7px}
+table.cm th{font-size:11px;font-weight:600;color:var(--ink-2);padding:2px 5px;text-align:center}
 table.cm th.rowh{text-align:right;white-space:nowrap}
 table.cm thead td{background:none;border:none;padding:0}
-table.cm tbody td{background:var(--inset);border:1px solid var(--rule);border-radius:7px;
-  padding:12px 8px;text-align:center;transition:background .15s,border-color .15s}
-table.cm tbody td .n{font-family:var(--mono);font-size:21px;font-variant-numeric:tabular-nums;display:block}
-table.cm tbody td .k{font-size:11px;color:var(--ink-3);letter-spacing:.06em;text-transform:uppercase}
+table.cm tbody td{background:var(--inset);border:1px solid var(--rule);border-radius:6px;
+  padding:7px 6px;text-align:center;transition:background .15s,border-color .15s}
+table.cm tbody td .n{font-family:var(--mono);font-size:18px;font-variant-numeric:tabular-nums;display:block;line-height:1.2}
+table.cm tbody td .k{font-size:9.5px;color:var(--ink-3);letter-spacing:.06em}
 table.cm tbody td.lit{background:var(--hl);border-color:var(--pos)}
 
-/* metric tiles */
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:10px;margin-top:16px}
-.tile{background:var(--inset);border:1px solid var(--rule);border-radius:8px;padding:10px 11px;cursor:default}
+.tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:9px}
+.tile{background:var(--inset);border:1px solid var(--rule);border-radius:7px;padding:7px 8px;min-width:0}
 .tile:hover{border-color:var(--ink-3)}
-.tile .t{font-size:11.5px;color:var(--ink-3);display:flex;align-items:center;gap:5px;margin-bottom:3px}
-.tile .v{font-family:var(--mono);font-size:19px;font-variant-numeric:tabular-nums}
-.tile .f{font-size:11px;color:var(--ink-3);font-family:var(--mono);margin-top:2px}
-.bar{height:3px;border-radius:2px;background:var(--rule);margin-top:7px;overflow:hidden}
+.tile .t{font-size:10.5px;color:var(--ink-3);margin-bottom:1px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.tile .v{font-family:var(--mono);font-size:16px;font-variant-numeric:tabular-nums;line-height:1.25}
+.bar{height:3px;border-radius:2px;background:var(--rule);margin-top:5px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--ink-3)}
 
-.readout{margin-top:22px;background:var(--surface);border:1px solid var(--rule);box-shadow:var(--shadow);
-  border-left:3px solid var(--pos);border-radius:8px;padding:14px 18px;font-size:15px;color:var(--ink-2)}
-.readout b{color:var(--ink);font-weight:600}
-.note{margin-top:18px;font-size:13.5px;color:var(--ink-3);max-width:760px}
-footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--rule);
-  font-size:12.5px;color:var(--ink-3)}
-footer a{color:var(--ink-2)}
+/* ---- short viewports: tighten the sidebar so nothing needs scrolling ---- */
+@media (max-height:800px){
+  .side{gap:10px;padding:13px 14px}
+  h1{font-size:19px}
+  .stand{font-size:11.8px}
+  .sliders{gap:11px}
+  .hint{font-size:10.5px;margin-top:2px}
+  .readout{padding:9px 11px;font-size:11.8px}
+  .sidefoot{padding-top:9px}
+  .preset{padding:4px 10px;font-size:11.5px}
+}
+
+@media (max-height:690px){
+  .side{gap:8px;padding:12px 13px}
+  .sliders{gap:9px}
+  .hint{line-height:1.3}
+  .stand{line-height:1.36}
+}
+
+/* ---- small or short screens: fall back to a scrolling page ---- */
+@media (max-width:1060px), (max-height:620px){
+  body{display:block;height:auto;overflow:auto;padding:26px 16px 48px}
+  .side{margin:0 0 13px;overflow:visible}
+  main{display:block}
+  .card{margin-bottom:13px}
+  .plot{height:auto}
+  .plot svg{height:auto}
+  .tiles{grid-template-columns:repeat(auto-fit,minmax(104px,1fr))}
+}
 </style>
 </head>
 <body>
-<button class="themebtn" id="theme" type="button">dark</button>
-<div class="wrap">
-
-<header>
-  <h1>Where do you put the threshold?</h1>
-  <p class="stand">A model gives every case a score. You decide how high that score has to be
-  before you act on it. Move the threshold and watch what it costs you.</p>
-</header>
-
-<div class="controls">
-  <div class="presets">
-    <span class="lbl">Start from:</span>
-    <button class="preset" data-p="0.5"   data-d="2"    data-t="1">Balanced classes</button>
-    <button class="preset" data-p="0.15"  data-d="1.42" data-t="0.385">Chihuahua or muffin</button>
-    <button class="preset" data-p="0.004" data-d="3.93" data-t="0.842">Smoke alarm</button>
+<aside class="side">
+  <div>
+    <h1>Where do you put the threshold?</h1>
+    <p class="stand">A model scores every case. You decide how high that score has to be
+    before you act on it.</p>
   </div>
+
+  <div>
+    <h3>Start from</h3>
+    <div class="presets">
+      <button class="preset" data-p="0.5"   data-d="2"    data-t="1">Balanced classes</button>
+      <button class="preset" data-p="0.15"  data-d="1.42" data-t="0.385">Chihuahua or muffin</button>
+      <button class="preset" data-p="0.004" data-d="3.93" data-t="0.842">Smoke alarm</button>
+    </div>
+  </div>
+
   <div class="sliders">
     <div class="ctl">
       <label for="prev">How common the positive class is <span class="val" id="prevv"></span></label>
@@ -138,98 +168,87 @@ footer a{color:var(--ink-2)}
     <div class="ctl">
       <label for="sep">How different the two groups look <span class="val" id="sepv"></span></label>
       <input type="range" id="sep" min="0" max="400" value="200">
-      <p class="hint">How good the model's score is at telling them apart.</p>
+      <p class="hint">How good the score is at telling them apart.</p>
     </div>
     <div class="ctl">
       <label for="thr">Decision threshold <span class="val" id="thrv"></span></label>
       <input type="range" id="thr" min="-450" max="850" value="100">
-      <p class="hint">Flag every case scoring at or above this. Drag the line on the chart too.</p>
+      <p class="hint">Flag every case scoring at or above this. You can drag the line on the chart too.</p>
     </div>
   </div>
+
   <label class="check"><input type="checkbox" id="scaled" checked>
     Draw each group at its real size, so a rare class looks rare</label>
-</div>
 
-<div class="grid">
-  <div>
-    <div class="card">
-      <h2>The two groups, and where you cut</h2>
-      <p class="sub">Everything at or to the right of the line gets flagged.</p>
-      <div class="legend">
-        <span><i class="chip" style="background:var(--pos)"></i>Positive class</span>
-        <span><i class="chip" style="background:var(--neg)"></i>Negative class</span>
-        <span><i class="chip" style="background:var(--ink-3)"></i>Threshold</span>
-      </div>
-      <svg class="curves" id="curves" viewBox="0 0 820 310" role="img"
-           aria-label="Score distributions for the two classes with a movable decision threshold"></svg>
+  <p class="readout" id="readout"></p>
+
+  <div class="sidefoot">
+    <span>Week 7 &middot; <a href="https://github.com/chri4354">chri4354</a></span>
+    <button class="themebtn" id="theme" type="button">dark</button>
+  </div>
+</aside>
+
+<main>
+  <div class="card">
+    <h2>The two groups, and where you cut</h2>
+    <p class="sub">Everything at or to the right of the line gets flagged.</p>
+    <div class="legend">
+      <span><i class="chip" style="background:var(--pos)"></i>Positive class</span>
+      <span><i class="chip" style="background:var(--neg)"></i>Negative class</span>
+      <span><i class="chip" style="background:var(--ink-3)"></i>Threshold</span>
     </div>
+    <div class="plot"><svg class="curves" id="curves" viewBox="0 0 820 310"
+         preserveAspectRatio="xMidYMid meet" role="img"
+         aria-label="Score distributions for the two classes with a movable decision threshold"></svg></div>
+  </div>
 
-    <div class="card" style="margin-top:22px">
-      <h2>Confusion matrix</h2>
-      <p class="sub">Laid out the way scikit-learn returns it: truth down the rows,
-         the model's prediction across the columns.</p>
-      <table class="cm" id="cm">
-        <caption>Counts per 10,000 cases.</caption>
-        <thead>
-          <tr><td></td><th scope="col">Predicted negative</th><th scope="col">Predicted positive</th></tr>
-        </thead>
-        <tbody>
-          <tr><th scope="row" class="rowh">Actually negative</th>
-              <td data-c="tn"><span class="n" id="n-tn"></span><span class="k">TN</span></td>
-              <td data-c="fp"><span class="n" id="n-fp"></span><span class="k">FP</span></td></tr>
-          <tr><th scope="row" class="rowh">Actually positive</th>
-              <td data-c="fn"><span class="n" id="n-fn"></span><span class="k">FN</span></td>
-              <td data-c="tp"><span class="n" id="n-tp"></span><span class="k">TP</span></td></tr>
-        </tbody>
-      </table>
-      <div class="tiles" id="tiles">
-        <div class="tile" data-lit="tp,fp"><div class="t">Precision</div>
-          <div class="v" id="m-prec"></div><div class="f">TP / (TP + FP)</div>
-          <div class="bar"><i id="b-prec"></i></div></div>
-        <div class="tile" data-lit="tp,fn"><div class="t">Recall</div>
-          <div class="v" id="m-rec"></div><div class="f">TP / (TP + FN)</div>
-          <div class="bar"><i id="b-rec"></i></div></div>
-        <div class="tile" data-lit="tn,fp"><div class="t">Specificity</div>
-          <div class="v" id="m-spec"></div><div class="f">TN / (TN + FP)</div>
-          <div class="bar"><i id="b-spec"></i></div></div>
-        <div class="tile" data-lit="tp,fp,fn"><div class="t">F1</div>
-          <div class="v" id="m-f1"></div><div class="f">harmonic mean</div>
-          <div class="bar"><i id="b-f1"></i></div></div>
-        <div class="tile" data-lit="tp,tn"><div class="t">Accuracy</div>
-          <div class="v" id="m-acc"></div><div class="f">(TP + TN) / all</div>
-          <div class="bar"><i id="b-acc"></i></div></div>
-      </div>
+  <div class="card">
+    <h2>ROC curve</h2>
+    <p class="sub">Every threshold you could have picked. The dot is yours.</p>
+    <div class="plot"><svg id="roc" viewBox="0 0 320 300" preserveAspectRatio="xMidYMid meet"
+         role="img" aria-label="ROC curve with the current threshold marked"></svg></div>
+    <p class="foot">Changing the base rate does not move this curve at all.</p>
+  </div>
+
+  <div class="card">
+    <h2>Confusion matrix</h2>
+    <p class="sub">Truth down the rows, prediction across the columns, as scikit-learn returns it.
+       Counts per 10,000 cases.</p>
+    <table class="cm" id="cm">
+      <thead>
+        <tr><td></td><th scope="col">Predicted negative</th><th scope="col">Predicted positive</th></tr>
+      </thead>
+      <tbody>
+        <tr><th scope="row" class="rowh">Actually negative</th>
+            <td data-c="tn"><span class="n" id="n-tn"></span><span class="k">TN</span></td>
+            <td data-c="fp"><span class="n" id="n-fp"></span><span class="k">FP</span></td></tr>
+        <tr><th scope="row" class="rowh">Actually positive</th>
+            <td data-c="fn"><span class="n" id="n-fn"></span><span class="k">FN</span></td>
+            <td data-c="tp"><span class="n" id="n-tp"></span><span class="k">TP</span></td></tr>
+      </tbody>
+    </table>
+    <div class="tiles" id="tiles">
+      <div class="tile" data-lit="tp,fp"><div class="t">Precision</div><div class="v" id="m-prec"></div>
+        <div class="bar"><i id="b-prec"></i></div></div>
+      <div class="tile" data-lit="tp,fn"><div class="t">Recall</div><div class="v" id="m-rec"></div>
+        <div class="bar"><i id="b-rec"></i></div></div>
+      <div class="tile" data-lit="tn,fp"><div class="t">Specificity</div><div class="v" id="m-spec"></div>
+        <div class="bar"><i id="b-spec"></i></div></div>
+      <div class="tile" data-lit="tp,fp,fn"><div class="t">F1</div><div class="v" id="m-f1"></div>
+        <div class="bar"><i id="b-f1"></i></div></div>
+      <div class="tile" data-lit="tp,tn"><div class="t">Accuracy</div><div class="v" id="m-acc"></div>
+        <div class="bar"><i id="b-acc"></i></div></div>
     </div>
   </div>
 
-  <div>
-    <div class="card">
-      <h2>ROC curve</h2>
-      <p class="sub">Every threshold you could have picked. The dot is yours.</p>
-      <svg id="roc" viewBox="0 0 320 300" role="img"
-           aria-label="ROC curve with the current threshold marked"></svg>
-      <p class="hint" style="margin-top:8px">Changing the base rate does not move this curve at all.</p>
-    </div>
-    <div class="card" style="margin-top:22px">
-      <h2>Precision–recall curve</h2>
-      <p class="sub">The same thresholds, plotted the other way.</p>
-      <svg id="pr" viewBox="0 0 320 300" role="img"
-           aria-label="Precision-recall curve with the current threshold marked"></svg>
-      <p class="hint" style="margin-top:8px">This one collapses as the positive class gets rarer.</p>
-    </div>
+  <div class="card">
+    <h2>Precision&ndash;recall curve</h2>
+    <p class="sub">The same thresholds, plotted the other way.</p>
+    <div class="plot"><svg id="pr" viewBox="0 0 320 300" preserveAspectRatio="xMidYMid meet"
+         role="img" aria-label="Precision-recall curve with the current threshold marked"></svg></div>
+    <p class="foot">This one collapses as the positive class gets rarer.</p>
   </div>
-</div>
-
-<p class="readout" id="readout"></p>
-
-<p class="note">Both curves are drawn from the normal distributions directly rather than from a
-random sample, so nothing jitters when you move a slider: every change you see is the change you made.</p>
-
-<footer>
-  Built for Data Science and Machine Learning in Practice, week 7.
-  Source: <a href="https://github.com/chri4354">github.com/chri4354</a>
-</footer>
-</div>
+</main>
 
 <script>
 /* ---------- maths ---------- */
